@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Build
+build/
+dist/
+
+# Logs
+*.log
+
+# Environment
+.env
+
+# SQLite
+*.db
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Python cache
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+
+# Ollama cache
+*.gguf
+
+# Temporary
+*.tmp

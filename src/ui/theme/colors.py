@@ -1,0 +1,22 @@
+class Colors:
+
+    WINDOW = "#090E17"
+
+    PANEL = "#121A29"
+    PANEL_LIGHT = "#182335"
+
+    BORDER = "#243247"
+
+    PRIMARY = "#22D3EE"
+    PRIMARY_LIGHT = "#38BDF8"
+
+    TEXT = "#FFFFFF"
+    TEXT_SECONDARY = "#94A3B8"
+
+    SUCCESS = "#22C55E"
+    WARNING = "#F59E0B"
+    ERROR = "#EF4444"
+
+    SEARCH = "#0F172A"
+
+    GLOW = "#00D9FF"

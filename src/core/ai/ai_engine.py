@@ -10,6 +10,10 @@ class AIEngine:
 
         self.model = ModelManager()
 
+    # ==========================================================
+    # NORMAL RESPONSE
+    # ==========================================================
+
     def ask(self, message: str):
 
         self.conversation.add_user_message(message)
@@ -21,6 +25,35 @@ class AIEngine:
         self.conversation.add_assistant_message(reply)
 
         return reply
+
+    # ==========================================================
+    # STREAMING RESPONSE
+    # ==========================================================
+
+    def ask_stream(self, message: str):
+
+        self.conversation.add_user_message(message)
+
+        full_response = ""
+
+        for chunk in self.model.generate_stream(
+            self.conversation.get_messages()
+        ):
+
+            full_response += chunk
+
+            yield chunk
+
+        # Store the COMPLETE response only after
+        # streaming has finished.
+
+        self.conversation.add_assistant_message(
+            full_response
+        )
+
+    # ==========================================================
+    # CLEAR CONVERSATION
+    # ==========================================================
 
     def clear_conversation(self):
 

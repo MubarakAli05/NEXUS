@@ -10,17 +10,28 @@ from PySide6.QtWidgets import (
 
 class MessageBubble(QWidget):
 
-    def __init__(self, message, sender="assistant"):
+    def __init__(self, message="", sender="assistant"):
 
         super().__init__()
 
+        self.sender = sender
+
+        # ==================================================
+        # OUTER LAYOUT
+        # ==================================================
+
         outer = QHBoxLayout(self)
 
-        outer.setContentsMargins(0, 4, 0, 4)
+        outer.setContentsMargins(
+            0,
+            4,
+            0,
+            4,
+        )
 
-        # -------------------------------------------------
-        # Bubble
-        # -------------------------------------------------
+        # ==================================================
+        # BUBBLE
+        # ==================================================
 
         bubble = QFrame()
 
@@ -28,19 +39,24 @@ class MessageBubble(QWidget):
 
         layout = QVBoxLayout(bubble)
 
-        layout.setContentsMargins(18, 14, 18, 14)
+        layout.setContentsMargins(
+            18,
+            14,
+            18,
+            14,
+        )
 
         layout.setSpacing(8)
 
-        # -------------------------------------------------
-        # Sender
-        # -------------------------------------------------
+        # ==================================================
+        # SENDER
+        # ==================================================
 
-        senderLabel = QLabel()
+        self.senderLabel = QLabel()
 
         if sender == "user":
 
-            senderLabel.setText("You")
+            self.senderLabel.setText("You")
 
             bubble.setStyleSheet("""
             QFrame{
@@ -49,7 +65,7 @@ class MessageBubble(QWidget):
             }
             """)
 
-            senderLabel.setStyleSheet("""
+            self.senderLabel.setStyleSheet("""
                 color:black;
                 font-size:12px;
                 font-weight:700;
@@ -57,7 +73,7 @@ class MessageBubble(QWidget):
 
         else:
 
-            senderLabel.setText("NEXUS")
+            self.senderLabel.setText("NEXUS")
 
             bubble.setStyleSheet("""
             QFrame{
@@ -67,56 +83,76 @@ class MessageBubble(QWidget):
             }
             """)
 
-            senderLabel.setStyleSheet("""
+            self.senderLabel.setStyleSheet("""
                 color:#22D3EE;
                 font-size:12px;
                 font-weight:700;
             """)
 
-        # -------------------------------------------------
-        # Message
-        # -------------------------------------------------
+        # ==================================================
+        # MESSAGE BODY
+        # ==================================================
 
-        body = QLabel(message)
+        self.body = QLabel(message)
 
-        body.setWordWrap(True)
+        self.body.setWordWrap(True)
 
-        body.setTextInteractionFlags(
+        self.body.setTextInteractionFlags(
             Qt.TextSelectableByMouse
         )
 
         if sender == "user":
 
-            body.setStyleSheet("""
+            self.body.setStyleSheet("""
                 color:black;
                 font-size:15px;
-                line-height:150%;
             """)
 
         else:
 
-            body.setStyleSheet("""
+            self.body.setStyleSheet("""
                 color:white;
                 font-size:15px;
-                line-height:150%;
             """)
 
-        layout.addWidget(senderLabel)
+        # ==================================================
+        # ADD CONTENT
+        # ==================================================
 
-        layout.addWidget(body)
+        layout.addWidget(
+            self.senderLabel
+        )
 
-        # -------------------------------------------------
-        # Alignment
-        # -------------------------------------------------
+        layout.addWidget(
+            self.body
+        )
+
+        # ==================================================
+        # ALIGNMENT
+        # ==================================================
 
         if sender == "user":
 
             outer.addStretch()
 
-            outer.addWidget(bubble)
+            outer.addWidget(
+                bubble
+            )
 
         else:
 
-            outer.addWidget(bubble)
+            outer.addWidget(
+                bubble
+            )
 
             outer.addStretch()
+
+    # ==========================================================
+    # UPDATE MESSAGE
+    # ==========================================================
+
+    def set_message(self, message):
+
+        self.body.setText(message)
+
+        self.adjustSize()

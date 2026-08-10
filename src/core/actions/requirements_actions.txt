@@ -1,0 +1,5 @@
+pyautogui
+psutil
+screen-brightness-control
+pycaw
+comtypes

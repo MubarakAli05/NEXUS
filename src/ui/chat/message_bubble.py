@@ -10,7 +10,11 @@ from PySide6.QtWidgets import (
 
 class MessageBubble(QWidget):
 
-    def __init__(self, message="", sender="assistant"):
+    def __init__(
+        self,
+        message="",
+        sender="assistant"
+    ):
 
         super().__init__()
 
@@ -33,11 +37,13 @@ class MessageBubble(QWidget):
         # BUBBLE
         # ==================================================
 
-        bubble = QFrame()
+        self.bubble = QFrame()
 
-        bubble.setMaximumWidth(700)
+        self.bubble.setMaximumWidth(700)
 
-        layout = QVBoxLayout(bubble)
+        layout = QVBoxLayout(
+            self.bubble
+        )
 
         layout.setContentsMargins(
             18,
@@ -56,9 +62,11 @@ class MessageBubble(QWidget):
 
         if sender == "user":
 
-            self.senderLabel.setText("You")
+            self.senderLabel.setText(
+                "You"
+            )
 
-            bubble.setStyleSheet("""
+            self.bubble.setStyleSheet("""
             QFrame{
                 background:#22D3EE;
                 border-radius:16px;
@@ -73,9 +81,11 @@ class MessageBubble(QWidget):
 
         else:
 
-            self.senderLabel.setText("NEXUS")
+            self.senderLabel.setText(
+                "NEXUS"
+            )
 
-            bubble.setStyleSheet("""
+            self.bubble.setStyleSheet("""
             QFrame{
                 background:#162133;
                 border:1px solid #243247;
@@ -93,9 +103,13 @@ class MessageBubble(QWidget):
         # MESSAGE BODY
         # ==================================================
 
-        self.body = QLabel(message)
+        self.body = QLabel(
+            message
+        )
 
-        self.body.setWordWrap(True)
+        self.body.setWordWrap(
+            True
+        )
 
         self.body.setTextInteractionFlags(
             Qt.TextSelectableByMouse
@@ -136,13 +150,13 @@ class MessageBubble(QWidget):
             outer.addStretch()
 
             outer.addWidget(
-                bubble
+                self.bubble
             )
 
         else:
 
             outer.addWidget(
-                bubble
+                self.bubble
             )
 
             outer.addStretch()
@@ -151,8 +165,17 @@ class MessageBubble(QWidget):
     # UPDATE MESSAGE
     # ==========================================================
 
-    def set_message(self, message):
+    def set_message(
+        self,
+        message
+    ):
 
-        self.body.setText(message)
+        self.body.setText(
+            message
+        )
+
+        self.body.adjustSize()
+
+        self.bubble.adjustSize()
 
         self.adjustSize()

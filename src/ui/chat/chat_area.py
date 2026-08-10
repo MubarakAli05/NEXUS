@@ -28,9 +28,7 @@ from src.ui.chat.input_bar import InputBar
 class AIWorker(QThread):
 
     chunk_received = Signal(str)
-
     finished = Signal()
-
     error = Signal(str)
 
     def __init__(self, ai, message):
@@ -38,7 +36,6 @@ class AIWorker(QThread):
         super().__init__()
 
         self.ai = ai
-
         self.message = message
 
     def run(self):
@@ -49,13 +46,17 @@ class AIWorker(QThread):
                 self.message
             ):
 
-                self.chunk_received.emit(chunk)
+                self.chunk_received.emit(
+                    chunk
+                )
 
             self.finished.emit()
 
         except Exception as e:
 
-            self.error.emit(str(e))
+            self.error.emit(
+                str(e)
+            )
 
 
 # ==========================================================
@@ -78,11 +79,17 @@ class ChatArea(QWidget):
 
         self.current_bubble = None
 
+        self.current_response = ""
+
+        self.typing = None
+
         # ==================================================
         # WINDOW
         # ==================================================
 
-        self.setObjectName("ChatArea")
+        self.setObjectName(
+            "ChatArea"
+        )
 
         self.setStyleSheet("""
         QWidget#ChatArea{
@@ -168,7 +175,9 @@ class ChatArea(QWidget):
             self.status
         )
 
-        self.main.addLayout(header)
+        self.main.addLayout(
+            header
+        )
 
         # ==================================================
         # CHAT SCROLL
@@ -277,7 +286,10 @@ class ChatArea(QWidget):
 
     def send_message(self):
 
-        # Prevent multiple requests
+        # --------------------------------------------------
+        # Prevent multiple AI requests
+        # --------------------------------------------------
+
         if (
             self.worker is not None
             and self.worker.isRunning()
@@ -317,7 +329,15 @@ class ChatArea(QWidget):
         self.scroll_to_bottom()
 
         # --------------------------------------------------
-        # WORKER
+        # RESET STREAM STATE
+        # --------------------------------------------------
+
+        self.current_bubble = None
+
+        self.current_response = ""
+
+        # --------------------------------------------------
+        # CREATE WORKER
         # --------------------------------------------------
 
         self.worker = AIWorker(
@@ -340,7 +360,7 @@ class ChatArea(QWidget):
         self.worker.start()
 
         # --------------------------------------------------
-        # INPUT STATE
+        # DISABLE INPUT
         # --------------------------------------------------
 
         self.inputBar.input.setEnabled(
@@ -351,139 +371,22 @@ class ChatArea(QWidget):
             False
         )
 
+    # ==========================================================
+    # RECEIVE STREAM CHUNK
+    # ==========================================================
 
+    def receive_chunk(
+        self,
+        chunk
+    ):
 
-    def receive_chunk(self, chunk):
-
-    # ==================================================
-    # FIRST CHUNK
-    # ==================================================
+        # --------------------------------------------------
+        # FIRST CHUNK
+        # --------------------------------------------------
 
         if self.current_bubble is None:
 
             # Remove typing indicator
-
-            if hasattr(self, "typing"):
-
-                self.messages.removeWidget(
-                    self.typing
-                )
-
-                self.typing.deleteLater()
-
-                self.typing = None
-
-            # Create empty NEXUS bubble
-
-            self.current_bubble = MessageBubble(
-                "",
-                "assistant"
-            )
-
-            self.messages.addWidget(
-                self.current_bubble
-            )
-
-            self.current_response = ""
-
-        # ==================================================
-        # APPEND CHUNK
-        # ==================================================
-
-        self.current_response += chunk
-
-        # Update existing QLabel
-
-        self.current_bubble.set_message(
-            self.current_response
-        )
-
-        QTimer.singleShot(
-            30,
-            self.scroll_to_bottom
-        )
-        # --------------------------------------------------
-        # Update bubble
-        # --------------------------------------------------
-
-        current_text = getattr(
-            self.current_bubble,
-            "text",
-            ""
-        )
-
-        current_text += chunk
-
-        # --------------------------------------------------
-        # Try common QLabel-based bubble APIs
-        # --------------------------------------------------
-
-        if hasattr(
-            self.current_bubble,
-            "label"
-        ):
-
-            self.current_bubble.label.setText(
-                current_text
-            )
-
-        elif hasattr(
-            self.current_bubble,
-            "message"
-        ):
-
-            self.current_bubble.message.setText(
-                current_text
-            )
-
-        elif hasattr(
-            self.current_bubble,
-            "setText"
-        ):
-
-            self.current_bubble.setText(
-                current_text
-            )
-
-        else:
-
-            # Fallback:
-            # recreate bubble text
-
-            self.messages.removeWidget(
-                self.current_bubble
-            )
-
-            self.current_bubble.deleteLater()
-
-            self.current_bubble = MessageBubble(
-                current_text,
-                "assistant"
-            )
-
-            self.messages.addWidget(
-                self.current_bubble
-            )
-
-        # Store text for next chunk
-
-        self.current_bubble.text = current_text
-
-        self.scroll_to_bottom()
-
-    # ==========================================================
-    # AI FINISHED
-    # ==========================================================
-
-    def receive_finished(self):
-
-        # Remove typing indicator if
-        # response somehow finished empty.
-
-        if hasattr(
-            self,
-            "typing"
-        ):
 
             if self.typing is not None:
 
@@ -495,11 +398,78 @@ class ChatArea(QWidget):
 
                 self.typing = None
 
-        self.current_bubble = None
+            # Create empty assistant bubble
+
+            self.current_bubble = MessageBubble(
+                "",
+                "assistant"
+            )
+
+            self.messages.addWidget(
+                self.current_bubble
+            )
+
+        # --------------------------------------------------
+        # APPEND TEXT
+        # --------------------------------------------------
+
+        self.current_response += chunk
+
+        # --------------------------------------------------
+        # UPDATE BUBBLE
+        # --------------------------------------------------
+
+        self.current_bubble.set_message(
+            self.current_response
+        )
+
+        # --------------------------------------------------
+        # AUTO SCROLL
+        # --------------------------------------------------
+
+        self.scroll_to_bottom()
+
+    # ==========================================================
+    # AI FINISHED
+    # ==========================================================
+
+    def receive_finished(self):
+
+        # --------------------------------------------------
+        # Remove typing indicator
+        # --------------------------------------------------
+
+        if self.typing is not None:
+
+            self.messages.removeWidget(
+                self.typing
+            )
+
+            self.typing.deleteLater()
+
+            self.typing = None
+
+        # --------------------------------------------------
+        # Reset worker
+        # --------------------------------------------------
+
+        if self.worker is not None:
+
+            self.worker.deleteLater()
 
         self.worker = None
 
-        # Enable input again
+        # --------------------------------------------------
+        # Reset stream
+        # --------------------------------------------------
+
+        self.current_bubble = None
+
+        self.current_response = ""
+
+        # --------------------------------------------------
+        # Enable input
+        # --------------------------------------------------
 
         self.inputBar.input.setEnabled(
             True
@@ -522,10 +492,11 @@ class ChatArea(QWidget):
         error_message
     ):
 
-        if hasattr(
-            self,
-            "typing"
-        ):
+        # --------------------------------------------------
+        # Remove typing indicator
+        # --------------------------------------------------
+
+        if self.typing is not None:
 
             self.messages.removeWidget(
                 self.typing
@@ -535,15 +506,33 @@ class ChatArea(QWidget):
 
             self.typing = None
 
+        # --------------------------------------------------
+        # Reset state
+        # --------------------------------------------------
+
         self.current_bubble = None
 
+        self.current_response = ""
+
+        if self.worker is not None:
+
+            self.worker.deleteLater()
+
         self.worker = None
+
+        # --------------------------------------------------
+        # Show error
+        # --------------------------------------------------
 
         self.add_message(
             "⚠️ NEXUS couldn't connect to the AI.\n\n"
             f"Error: {error_message}",
             "assistant"
         )
+
+        # --------------------------------------------------
+        # Enable input
+        # --------------------------------------------------
 
         self.inputBar.input.setEnabled(
             True
@@ -562,12 +551,14 @@ class ChatArea(QWidget):
     def scroll_to_bottom(self):
 
         QTimer.singleShot(
-            30,
-            lambda: self.scroll
-            .verticalScrollBar()
-            .setValue(
+            20,
+            lambda: (
                 self.scroll
                 .verticalScrollBar()
-                .maximum()
+                .setValue(
+                    self.scroll
+                    .verticalScrollBar()
+                    .maximum()
+                )
             )
         )
